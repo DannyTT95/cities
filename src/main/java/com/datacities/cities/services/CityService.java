@@ -40,28 +40,38 @@ public class CityService {
         ArrayList<CityModel> citiesSuggested = cityRepository.busquedaName(name);
         Double diffLatitude = 0.0;
         Double diffLongitude = 0.0;
-        int score;
+        int diffName = 0;
 
         for (CityModel cityModel : citiesSuggested) {
-            score = 10;
+            diffName = name.length() - cityModel.getName().length();
             diffLatitude = latitude - cityModel.getLatitude();
             diffLongitude = longitude - cityModel.getLongitude();
-            if(!(name.toUpperCase()).equals((cityModel.getName()).toUpperCase())) {
-                score -= 5; 
-            }
-            if(diffLatitude > 5 || diffLatitude < -5) {
-                score -= 3;
-            }
-            if(diffLongitude > 5 || diffLongitude < -5) {
-                score -= 2;
-            }
             
-            cityModel.setScore(score * .1);
+            cityModel.setScore((evaluarScore(diffName, diffLatitude, diffLongitude)) / 10);
         } 
 
         //Ordenar de mayor a menor puntuación (score)
         Collections.sort(citiesSuggested, Comparator.comparing(CityModel::getScore).reversed());
         return citiesSuggested;         
+    }
+
+    public double evaluarScore(int diffName, Double diffLatitude, Double diffLongitud) {
+        double score = 10;
+
+        if(diffName < 0) {
+            diffName *= -1;
+        }
+        if(diffLatitude < 0) {
+            diffLatitude *= -1;
+        }
+        if(diffLongitud < 0) {
+            diffLongitud *= -1;
+        }
+
+        Double diff = (diffName + diffLatitude + diffLongitud) / 3;
+        diff = (double) Math.round(diff);
+
+        return score - diff;
     }
 
     public ArrayList<CityModel> obtenerSugerencia(String name) {
